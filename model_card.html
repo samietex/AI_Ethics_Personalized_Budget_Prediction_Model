@@ -1,0 +1,117 @@
+
+<html>
+  <head>
+  </head>
+  <body>
+  <center><h1>Model Card - IDOOU AI Budget Predicter</h1></center>
+  <h2>Model Details</h2>
+  
+<br>-- Budget Predicter AI is a model that offers personalized predictions if a budget is >= 300 or not
+by using features such as Age, Gender, Education Level and Recommended Activities. 
+<br>-- Logistic Regression and Gaussian Naive Bayes classifucation model were utilized for predicting the
+budget of each users based on some given features.
+<br>-- In this model, the features that influences the outcome of predictions are independent of each other.
+There is little or no multicollinearity among the indepenent variable. Also note that the Logistic
+Regression model was selected as a result of evaluation of its accuracy score and confusion matrix 
+visual in comparison with the Gaussian Naive Bayes model.
+
+  <h2>Intended Use</h2>
+  
+<br>-- IDOOU is a mobile app users can leverage to get recommendations on activities. The creator of this
+app would like to identify if users with bachelor's and master's degree are a privileged group in terms
+of budget.
+<br>-- The intended users of this model are users that are either High school grad, users with bachelor's
+degree or users with master's degree of all genders that wants to use IDOOU to get recommendations on
+activities.
+<br>-- Use cases out of this scope is whether or not a user have a child, or users that did not graduate
+from High school.
+
+  <h2>Factors</h2>
+  
+<br>-- The education level of the users affects the impact of the model.
+<br>-- The age group of the users affect the impact of the model.
+<br>-- The gender of the users affect the impact of the model.
+
+  <h2>Metrics</h2>
+  
+<br>-- The metrics used in measuring the performance of the model are divided into accuracy/confusion matrix
+metrics for accuracy scoring of the models and the fairness metrics for measuring the biasness of the 
+dataset of the model.
+<br>-- The accuracy metrics of the Gaussian Naive Bayes model is showing a model accuracy of `0.9865`, while
+the accuracy metrics of the Logistic Regression model showing an accuracy score of 0.9951
+<br>-- The statistical parity difference and disparate impact value metrics were evaluated to find bias in 
+the dataset of the model.
+
+  <h2> Training Data </h2>
+  
+<br>-- The binary_label_dataset was splitted with 50% of the dataset allocated to be trained.
+
+  <h2> Evaluation Data </h2>
+  
+<br>-- After training the train dataset and fitting the Logistic Regression and Gaussian Naive Bayes model
+to the train dataset, the test dataset was used in evaluating the models performance.
+
+  <h2>Quantitative Analysis</h2>
+  
+<br>--The fairness metrics of the Logistic Regression model like the equal opportunity difference value
+and statistical parity difference before bias mitigation has a score of -1.0000 and -0.9924 after 
+testing the model on the test dataset
+<br>--Before the bias mitigation, the accuracy metrics of the Logistic Regression model shows that model 
+has an accuracy score of 0.9958.
+<br>--After the preprocessing bias mitigation, the accuracy metrics of the Logistic Regression model has
+an accuracy score of 0.9907.
+<br>--The fairness metrics of the Logistic Regression model like the equal opportunity difference value
+and statistical parity difference after the preprocessing bias mitigation has a score of -1.0000 and 
+-0.9924 after testing the mitigated model on the test dataset.
+
+  
+  <br/><br/><b>Results of the AI model after applying the bias mitigation strategy</b><br/>
+  
+  <center>
+  
+  <img src="classification_thresholds1.png"><br/>
+  <img src="classification_thresholds2.png"><br/>
+  <img src="confusion_matrix.png"><br/>
+  <img src="permutation_importance.png"><br/>
+
+  </center>
+
+  <h2>Ethical Considerations</h2>
+  
+<br>-- The objective of the app is to remove users from having to handle the nitty-gritty details of 
+finding the right activity, like determining the appropriate budget, ensuring the weather is perfect, 
+and the location/accommodation is not closed, so users don't have the liberty to control most aspects 
+of the model. 
+<br>-- The model for this app does not have any implications on human life, health or safety in the usage
+of the model.
+<br>-- The key contributing factors from the permutation importance after the preprocessing bias mitigation
+are users in all the age groups(18-24, 25-44, 45-65, 66-92), and users in the bachelor's and master's 
+education level.
+
+  <h2>Caveats and Recommendations</h2>
+  
+<br>-- I'll recommend Logistic Regression model for classification related problems in order to have a better
+accuracy score and better fairness metric scores.
+<br>-- Preprocessing and postprocesssing bias mitigation techniques should also be applied on the dataset
+of the model.
+<br>-- The Logistic Regression model after the preprocessing bias mitigation seems to have higher false positives and 
+lesser false negatives compared to the Logistic Regression before the bias mitigation.
+<br>-- Further ethical AI analyses I would apply beyond this project:
+The Adversarial inprocessing debiasing technique will be applied beyond this project to maximize prediction
+accuracy.
+
+The Reject Option Classification (ROC) preprocessing technique can be applied beyon this project also
+
+
+  <h2>Business Consequences</h2>
+  
+
+<br>-- Positive Impact: With a model accuracy score of 0.99xx, the IDOOU Budget Predicter will be able to 
+accurately recommend activities users can take in a given area.
+
+<br>-- Negative Impact: With the bias in the dataset and the little contributions of users with lesser education 
+levels (lesser than high school grad) to the model, it might discourage users in that category from 
+trusting the accuracy of the app. 
+
+  </body>
+</html>
