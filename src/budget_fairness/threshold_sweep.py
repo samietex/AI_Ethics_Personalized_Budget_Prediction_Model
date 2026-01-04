@@ -4,6 +4,7 @@ import argparse
 import json
 from pathlib import Path
 
+from matplotlib import lines
 import matplotlib.pyplot as plt
 import mlflow
 import numpy as np
@@ -109,7 +110,9 @@ def _recommend_threshold(
             & (work["positive_rate"] >= pos_min)
             & (work["positive_rate"] <= pos_max)
         ]
-        best = work2.sort_values(by=["di_distance", optimize_metric], ascending=[True, False]).iloc[0]
+        best = work2.sort_values(by=["di_distance", optimize_metric], ascending=[True, False]).iloc[
+            0
+        ]
         reason = "no_threshold_meets_di_bounds_closest_di_then_maximize_metric"
 
     return {
@@ -117,7 +120,9 @@ def _recommend_threshold(
         "recommended_threshold": float(best["threshold"]),
         "recommended_metric_name": optimize_metric,
         "recommended_metric_value": float(best[optimize_metric]),
-        "recommended_mitigated_di": float(best["mitigated_di"]) if not pd.isna(best["mitigated_di"]) else None,
+        "recommended_mitigated_di": float(best["mitigated_di"])
+        if not pd.isna(best["mitigated_di"])
+        else None,
         "recommended_baseline_f1": float(best["baseline_f1"]) if "baseline_f1" in best else None,
         "recommended_mitigated_f1": float(best["mitigated_f1"]) if "mitigated_f1" in best else None,
     }
@@ -134,7 +139,9 @@ def _summary_markdown(df: pd.DataFrame, rec: dict, di_min: float, di_max: float)
             return str(x)
 
     meets = (
-        pd.notna(row["mitigated_di"]) and (row["mitigated_di"] >= di_min) and (row["mitigated_di"] <= di_max)
+        pd.notna(row["mitigated_di"])
+        and (row["mitigated_di"] >= di_min)
+        and (row["mitigated_di"] <= di_max)
     )
 
     top = df.copy()
@@ -154,7 +161,9 @@ def _summary_markdown(df: pd.DataFrame, rec: dict, di_min: float, di_max: float)
     for k in ["accuracy", "precision", "recall", "f1", "roc_auc"]:
         b = row.get(f"baseline_{k}", np.nan)
         m = row.get(f"mitigated_{k}", np.nan)
-        lines.append(f"| {k} | {fmt(b)} | {fmt(m)} | {fmt(m - b) if pd.notna(m) and pd.notna(b) else 'n/a'} |")
+        delta_str = fmt(m - b) if pd.notna(m) and pd.notna(b) else "n/a"
+        lines.append(f"| {k} | {fmt(b)} | {fmt(m)} | {delta_str} |")
+
     lines.append("")
     lines.append(f"- **Positive rate P(y=1)** at threshold: **{fmt(row['positive_rate'])}**\n")
 
@@ -164,7 +173,9 @@ def _summary_markdown(df: pd.DataFrame, rec: dict, di_min: float, di_max: float)
     for k in ["spd", "di", "eod", "aod", "ppv_diff"]:
         b = row.get(f"baseline_{k}", np.nan)
         m = row.get(f"mitigated_{k}", np.nan)
-        lines.append(f"| {k} | {fmt(b)} | {fmt(m)} | {fmt(m - b) if pd.notna(m) and pd.notna(b) else 'n/a'} |")
+        delta_str = fmt(m - b) if pd.notna(m) and pd.notna(b) else "n/a"
+        lines.append(f"| {k} | {fmt(b)} | {fmt(m)} | {delta_str} |")
+
     lines.append("")
 
     lines.append("## Top thresholds by mitigated F1 (for reference)\n")
@@ -175,13 +186,17 @@ def _summary_markdown(df: pd.DataFrame, rec: dict, di_min: float, di_max: float)
             f"| {r['threshold']:.2f} | {fmt(r['mitigated_f1'])} | {fmt(r['mitigated_di'])} | {fmt(r['baseline_f1'])} | {fmt(r['baseline_di'])} |"
         )
 
-    lines.append("| threshold | positive_rate | mitigated_f1 | mitigated_di | baseline_f1 | baseline_di |")
+    lines.append(
+        "| "
+        f"{r['threshold']:.2f} | {fmt(r['positive_rate'])} | {fmt(r['mitigated_f1'])} | "
+        f"{fmt(r['mitigated_di'])} | {fmt(r['baseline_f1'])} | {fmt(r['baseline_di'])} |"
+    )
+
     lines.append("|---:|---:|---:|---:|---:|---:|")
     ...
     lines.append(
         f"| {r['threshold']:.2f} | {fmt(r['positive_rate'])} | {fmt(r['mitigated_f1'])} | {fmt(r['mitigated_di'])} | {fmt(r['baseline_f1'])} | {fmt(r['baseline_di'])} |"
     )
-
 
     lines.append("\nArtifacts:")
     lines.append("- `threshold_sweep_results.csv` / `.json`")
@@ -239,7 +254,6 @@ def run_threshold_sweep(
 
             pos_rate = float(np.mean(y == 1))
 
-
             X_train, X_test, y_train, y_test = train_test_split(
                 X,
                 y,
@@ -253,7 +267,11 @@ def run_threshold_sweep(
             base_model.fit(X_train, y_train)
 
             y_pred_base = base_model.predict(X_test)
-            y_prob_base = base_model.predict_proba(X_test)[:, 1] if hasattr(base_model, "predict_proba") else None
+            y_prob_base = (
+                base_model.predict_proba(X_test)[:, 1]
+                if hasattr(base_model, "predict_proba")
+                else None
+            )
 
             base_eval = evaluate_classifier(y_test, y_pred_base, y_prob=y_prob_base)
             base_fair = compute_fairness_by_education(
@@ -275,7 +293,11 @@ def run_threshold_sweep(
             mit_model.fit(X_train, y_train, model__sample_weight=weights)
 
             y_pred_mit = mit_model.predict(X_test)
-            y_prob_mit = mit_model.predict_proba(X_test)[:, 1] if hasattr(mit_model, "predict_proba") else None
+            y_prob_mit = (
+                mit_model.predict_proba(X_test)[:, 1]
+                if hasattr(mit_model, "predict_proba")
+                else None
+            )
 
             mit_eval = evaluate_classifier(y_test, y_pred_mit, y_prob=y_prob_mit)
             mit_fair = compute_fairness_by_education(
@@ -337,7 +359,9 @@ def run_threshold_sweep(
         )
 
         summary_path = out_dir / "recommended_threshold.md"
-        summary_path.write_text(_summary_markdown(df, rec, di_min=di_min, di_max=di_max), encoding="utf-8")
+        summary_path.write_text(
+            _summary_markdown(df, rec, di_min=di_min, di_max=di_max), encoding="utf-8"
+        )
 
         # Log artifacts to MLflow
         mlflow.log_artifact(str(csv_path))
@@ -349,8 +373,12 @@ def run_threshold_sweep(
         mlflow.log_metrics(
             {
                 "recommended_threshold": rec["recommended_threshold"],
-                "recommended_mitigated_di": rec["recommended_mitigated_di"] if rec["recommended_mitigated_di"] is not None else np.nan,
-                "recommended_mitigated_f1": rec["recommended_mitigated_f1"] if rec["recommended_mitigated_f1"] is not None else np.nan,
+                "recommended_mitigated_di": rec["recommended_mitigated_di"]
+                if rec["recommended_mitigated_di"] is not None
+                else np.nan,
+                "recommended_mitigated_f1": rec["recommended_mitigated_f1"]
+                if rec["recommended_mitigated_f1"] is not None
+                else np.nan,
             }
         )
 
@@ -367,7 +395,9 @@ def run_threshold_sweep(
 
 
 def _parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="Threshold sweep: fairness vs threshold + recommended threshold under DI constraint.")
+    p = argparse.ArgumentParser(
+        description="Threshold sweep: fairness vs threshold + recommended threshold (DI constraint)."
+    )
     p.add_argument("--data-path", required=True, help="Path to the CSV dataset.")
     p.add_argument("--min-threshold", type=float, default=100.0)
     p.add_argument("--max-threshold", type=float, default=800.0)
@@ -376,11 +406,19 @@ def _parse_args() -> argparse.Namespace:
     p.add_argument("--di-max", type=float, default=1.25, help="Upper bound for DI constraint.")
     p.add_argument("--test-size", type=float, default=BudgetConfig.test_size)
     p.add_argument("--random-state", type=int, default=BudgetConfig.random_state)
-    p.add_argument("--sample-n", type=int, default=None, help="Optional row sample size for faster sweeps.")
+    p.add_argument(
+        "--sample-n", type=int, default=None, help="Optional row sample size for faster sweeps."
+    )
     p.add_argument("--tracking-uri", default=None, help="Optional MLflow tracking URI.")
-    p.add_argument("--experiment-name", default=BudgetConfig.experiment_name, help="MLflow experiment name.")
-    p.add_argument("--pos-min", type=float, default=0.2, help="Minimum allowed positive rate P(y=1).")
-    p.add_argument("--pos-max", type=float, default=0.8, help="Maximum allowed positive rate P(y=1).")
+    p.add_argument(
+        "--experiment-name", default=BudgetConfig.experiment_name, help="MLflow experiment name."
+    )
+    p.add_argument(
+        "--pos-min", type=float, default=0.2, help="Minimum allowed positive rate P(y=1)."
+    )
+    p.add_argument(
+        "--pos-max", type=float, default=0.8, help="Maximum allowed positive rate P(y=1)."
+    )
     return p.parse_args()
 
 

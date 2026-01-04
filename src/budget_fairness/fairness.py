@@ -6,6 +6,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
+
 def _safe_div(num: float, den: float) -> float:
     return float(num / den) if den != 0 else float("nan")
 
@@ -32,8 +33,16 @@ def _group_basic_rates(y_true: np.ndarray, y_pred: np.ndarray) -> dict[str, floa
     negatives = y_true == 0
     pred_pos = y_pred == 1
 
-    tpr = _rate((y_pred == 1) & positives) / _rate(positives) if _rate(positives) != 0 else float("nan")
-    fpr = _rate((y_pred == 1) & negatives) / _rate(negatives) if _rate(negatives) != 0 else float("nan")
+    tpr = (
+        _rate((y_pred == 1) & positives) / _rate(positives)
+        if _rate(positives) != 0
+        else float("nan")
+    )
+    fpr = (
+        _rate((y_pred == 1) & negatives) / _rate(negatives)
+        if _rate(negatives) != 0
+        else float("nan")
+    )
     ppv = _rate(positives & pred_pos) / _rate(pred_pos) if _rate(pred_pos) != 0 else float("nan")
 
     return {
@@ -100,7 +109,9 @@ def compute_fairness_by_education(
     spd = unpriv_rates["selection_rate"] - priv_rates["selection_rate"]
     di = _safe_div(unpriv_rates["selection_rate"], priv_rates["selection_rate"])
     eod = unpriv_rates["tpr"] - priv_rates["tpr"]
-    aod = 0.5 * ((unpriv_rates["fpr"] - priv_rates["fpr"]) + (unpriv_rates["tpr"] - priv_rates["tpr"]))
+    aod = 0.5 * (
+        (unpriv_rates["fpr"] - priv_rates["fpr"]) + (unpriv_rates["tpr"] - priv_rates["tpr"])
+    )
     ppv_diff = unpriv_rates["ppv"] - priv_rates["ppv"]
 
     fairness_metrics = {
@@ -127,4 +138,3 @@ def compute_fairness_by_education(
         group_rates=group_rates,
         fairness_metrics=fairness_metrics,
     )
-

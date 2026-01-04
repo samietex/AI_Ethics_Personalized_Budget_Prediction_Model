@@ -1,6 +1,6 @@
 import pandas as pd
 
-from budget_fairness.data import REQUIRED_COLUMNS, to_model_frame
+from budget_fairness.data import to_model_frame
 
 
 def test_to_model_frame_creates_target():

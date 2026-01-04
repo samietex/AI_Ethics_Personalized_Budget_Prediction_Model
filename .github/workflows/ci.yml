@@ -36,3 +36,8 @@ jobs:
       - name: Tests (pytest)
         run: |
           pytest -q
+
+      - name: Format check (ruff)
+        run: |
+          ruff format --check .
+

@@ -6,7 +6,12 @@ from budget_fairness.mitigation import compute_reweighing_weights
 def test_reweighing_weights_length_matches_rows():
     X = pd.DataFrame(
         {
-            "Education_Level": ["Bachelor’s Degree", "High School Grad", "Master’s Degree", "High School Grad"],
+            "Education_Level": [
+                "Bachelor’s Degree",
+                "High School Grad",
+                "Master’s Degree",
+                "High School Grad",
+            ],
             "Age": [20, 30, 40, 50],
         }
     )

@@ -8,7 +8,12 @@ def test_fairness_metrics_shapes_and_keys():
         {
             "Age": [20, 30, 40, 50],
             "Gender": ["Male", "Female", "Female", "Male"],
-            "Education_Level": ["Bachelor’s Degree", "High School Grad", "Bachelor’s Degree", "High School Grad"],
+            "Education_Level": [
+                "Bachelor’s Degree",
+                "High School Grad",
+                "Bachelor’s Degree",
+                "High School Grad",
+            ],
             "With children?": [0, 1, 0, 1],
             "Recommended_Activity": ["A", "B", "C", "D"],
         }
