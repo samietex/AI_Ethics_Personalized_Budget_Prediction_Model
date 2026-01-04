@@ -8,7 +8,6 @@ import mlflow
 import pandas as pd
 import streamlit as st
 
-
 st.set_page_config(page_title="Budget Threshold Predictor", layout="centered")
 
 st.title("Personalized Budget Threshold Predictor")
