@@ -5,6 +5,9 @@ src/budget_fairness/config.py
 src/budget_fairness/data.py
 src/budget_fairness/evaluation.py
 src/budget_fairness/fairness.py
+src/budget_fairness/mitigation.py
+src/budget_fairness/reporting.py
+src/budget_fairness/threshold_sweep.py
 src/budget_fairness/train.py
 src/budget_fairness.egg-info/PKG-INFO
 src/budget_fairness.egg-info/SOURCES.txt
@@ -13,3 +16,4 @@ src/budget_fairness.egg-info/requires.txt
 src/budget_fairness.egg-info/top_level.txt
 tests/test_data_schema.py
 tests/test_fairness_metrics.py
+tests/test_reweighing.py

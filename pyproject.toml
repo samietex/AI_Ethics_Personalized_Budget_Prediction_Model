@@ -22,6 +22,7 @@ dev = [
   "pytest>=7.0",
   "ruff>=0.4",
 ]
+app = ["streamlit"]
 
 [tool.setuptools]
 package-dir = {"" = "src"}
@@ -33,8 +34,10 @@ where = ["src"]
 line-length = 100
 extend-exclude = ["*.ipynb", "notebooks/**"]
 target-version = "py310"
-select = ["E", "F", "I", "UP", "B"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP"]
 ignore = ["E501"]
+
+
+
