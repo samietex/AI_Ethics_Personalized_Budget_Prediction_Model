@@ -1,0 +1,57 @@
+Metadata-Version: 2.4
+Name: budget-fairness
+Version: 0.1.0
+Summary: Responsible ML budget threshold predictor with MLflow tracking
+Author: Samuel Shaibu
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: pandas>=2.0
+Requires-Dist: numpy>=1.24
+Requires-Dist: scikit-learn>=1.3
+Requires-Dist: mlflow>=2.10
+Requires-Dist: matplotlib>=3.7
+Provides-Extra: dev
+Requires-Dist: pytest>=7.0; extra == "dev"
+Requires-Dist: ruff>=0.4; extra == "dev"
+
+# Responsible ML: Personalized Budget Threshold Predictor (with MLflow)
+
+This project predicts whether a user's budget is **above a configurable threshold** (default: **$300**) and is being refactored into a reproducible, deployable, and *Responsible AI* friendly codebase.
+
+## Quickstart (local)
+```bash
+# 1) Create & activate a virtual environment
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
+
+# 2) Install
+pip install -U pip
+pip install -e ".[dev]"
+
+# 3) Train + log an experiment to MLflow
+python -m budget_fairness.train --data-path /path/to/udacity_ai_ethics_project_data.csv --model logreg --sample-n 50000
+
+# 4) View runs (opens a local UI)
+mlflow ui --backend-store-uri ./mlruns
+```
+
+## What gets logged to MLflow
+- Params: threshold, test_size, random_state, model_type, etc.
+- Metrics: accuracy, precision, recall, f1, roc_auc
+- Artifacts: confusion matrix plot, classification report text
+- Model: a scikit-learn Pipeline (preprocess + classifier)
+
+## Project layout
+```text
+src/budget_fairness/   Core package
+tests/                Minimal tests (grows over time)
+```
+
+## Notes on data
+The training script expects a CSV with columns:
+- `Budget (in dollars)`
+- `Age`
+- `Gender`
+- `Education_Level`
+- `With children?`
+- `Recommended_Activity`
