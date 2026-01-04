@@ -1,4 +1,4 @@
-artifact_path: file:C:/Users/Samuel/Downloads/AI_Ethics_Personalized_Budget_Prediction_Model/mlruns/1/models/m-190861b3871245d2ae93bf5f256f4ced/artifacts
+artifact_path: file:C:/Users/Samuel/Downloads/AI_Ethics_Personalized_Budget_Prediction_Model/mlruns/1/models/m-44a2c8fa22684c52ba61fc18d073df5e/artifacts
 flavors:
   python_function:
     env:
@@ -14,9 +14,9 @@ flavors:
     serialization_format: cloudpickle
     sklearn_version: 1.7.2
 mlflow_version: 3.8.1
-model_id: m-190861b3871245d2ae93bf5f256f4ced
+model_id: m-44a2c8fa22684c52ba61fc18d073df5e
 model_size_bytes: 3148
-model_uuid: m-190861b3871245d2ae93bf5f256f4ced
+model_uuid: m-44a2c8fa22684c52ba61fc18d073df5e
 prompts: null
-run_id: c3ac115599a54264bda8379de2506a98
-utc_time_created: '2026-01-04 15:53:41.906973'
+run_id: de168237616b497393edb375601ffd84
+utc_time_created: '2026-01-04 18:58:44.329093'
