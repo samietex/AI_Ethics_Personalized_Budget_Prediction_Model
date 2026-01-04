@@ -4,7 +4,6 @@ import argparse
 import json
 from pathlib import Path
 
-from matplotlib import lines
 import matplotlib.pyplot as plt
 import mlflow
 import numpy as np
