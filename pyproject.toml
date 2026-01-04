@@ -22,6 +22,7 @@ dev = [
   "pytest>=7.0",
   "ruff>=0.4",
 ]
+app = ["streamlit"]
 
 [tool.setuptools]
 package-dir = {"" = "src"}
@@ -39,6 +40,5 @@ select = ["E", "F", "I", "UP", "B"]
 select = ["E", "F", "I", "B", "UP"]
 ignore = ["E501"]
 
-[project.optional-dependencies]
-app = ["streamlit"]
+
 
