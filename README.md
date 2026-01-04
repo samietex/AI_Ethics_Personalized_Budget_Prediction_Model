@@ -28,7 +28,7 @@ This repo demonstrates a governance-ready approach:
 
 ## What the model predicts
 
-**Target:**  
+**Target:**
 `high_budget = 1` if `Budget (in dollars) >= threshold` else `0`
 
 **Default threshold:** `300` (configurable)
