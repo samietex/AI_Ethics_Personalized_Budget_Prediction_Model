@@ -38,3 +38,7 @@ select = ["E", "F", "I", "UP", "B"]
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP"]
 ignore = ["E501"]
+
+[project.optional-dependencies]
+app = ["streamlit"]
+

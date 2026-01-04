@@ -9,6 +9,7 @@ This project builds a **Responsible ML** workflow for predicting whether a user'
 - **Mitigation via reweighing** (baseline vs mitigated comparison)
 - **Threshold sweep** to select a threshold under fairness + base-rate constraints
 - **MLflow experiment tracking** (metrics, artifacts, model versions)
+- A stakeholder-friendly **Streamlit demo app**
 - Governance-friendly documentation (model card, data sheet, risk assessment)
 
 ---
@@ -118,6 +119,27 @@ mlflow ui --backend-store-uri ./mlruns
 
 ---
 
+## Demo app (Streamlit)
+
+A lightweight Streamlit app is included for stakeholder-friendly demos. It loads the latest local MLflow run and allows you to choose Baseline vs Mitigated (reweighing) and generate a prediction from user inputs.
+
+### Install app dependencies
+```bash
+pip install -e ".[app]"
+```
+
+### Run the app
+```bash
+streamlit run app/streamlit_app.py
+```
+
+### Notes
+- The app expects that you have trained at least once locally so `mlruns/` exists.
+- It also reads `reports/artifacts/last_run.json` (if available) to show the latest run summary.
+- **Business demo:** open the app, select Baseline vs Mitigated, click Predict, then review the Responsible AI artifacts linked below.
+
+---
+
 ## Fairness evaluation (what we measure)
 
 We compute group fairness using `Education_Level`:
@@ -170,13 +192,6 @@ Budget threshold selection can strongly affect both performance and fairness. To
 - **Fairness constraint:** mitigated DI ∈ [0.8, 1.25]
 - **Base-rate constraint:** positive rate P(y=1) ∈ [0.3, 0.7]
 
-### Latest sweep result (example)
-
-- **Recommended threshold:** $200
-- **Positive rate at threshold:** 0.6168
-- **Mitigated DI at threshold:** 0.8052 (meets DI constraint)
-- **Trade-off:** mitigation improves fairness substantially, while reducing some performance metrics (details in the sweep summary artifact)
-
 ### Run the sweep
 
 ```bash
@@ -227,17 +242,34 @@ docs/model_card.filled.md
 ## Project structure
 
 ```
+app/                       Streamlit demo app
+docs/                      Responsible AI documentation (model card, risk, data sheet)
+mlruns/                    Local MLflow store (ignored)
+reports/artifacts/         Generated artifacts (baseline/mitigated + sweep outputs)
 src/budget_fairness/       Core package (data, training, fairness, mitigation, reporting, sweeps)
 tests/                     Unit tests
-docs/                      Responsible AI documentation (model card, risk, data sheet)
-reports/artifacts/         Generated artifacts (baseline/mitigated + sweep outputs)
-mlruns/                    Local MLflow store (ignored)
+```
+
+---
+
+## CI/CD
+
+This repo uses GitHub Actions for continuous integration:
+
+- Linting with `ruff`
+- Tests with `pytest`
+
+Workflow file:
+
+```
+.github/workflows/ci.yml
 ```
 
 ---
 
 ## What's next (planned improvements)
 
-- CI workflow (lint + tests) via GitHub Actions
-- Streamlit dashboard for stakeholders (upload data, run model, download reports)
-- Drift checks and scheduled evaluation runs (monitoring-style reporting)
+- CI enhancements (coverage reporting, caching, stricter checks)
+- Dockerfile for fully reproducible local runs
+- Model registry / promotion rules (choose baseline vs mitigated automatically)
+- Scheduled evaluation runs (GitHub Actions cron) for monitoring-style reporting
