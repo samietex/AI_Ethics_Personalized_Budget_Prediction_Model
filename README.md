@@ -9,8 +9,8 @@ This project builds a **Responsible ML** workflow for predicting whether a user'
 - **Mitigation via reweighing** (baseline vs mitigated comparison)
 - **Threshold sweep** to select a threshold under fairness + base-rate constraints
 - **MLflow experiment tracking** (metrics, artifacts, model versions)
-- A stakeholder-friendly **Streamlit demo app**
-- Governance-friendly documentation (model card, data sheet, risk assessment)
+- A stakeholder-friendly **Streamlit demo app** (Streamlit Cloud friendly)
+- Governance-ready documentation (model card, data sheet, risk assessment)
 
 ---
 
@@ -22,7 +22,7 @@ This repo demonstrates a governance-ready approach:
 - measure fairness gaps,
 - apply a mitigation method (reweighing),
 - report trade-offs clearly (fairness vs performance),
-- and keep an audit trail (MLflow).
+- and keep an audit trail (MLflow artifacts + metrics).
 
 ---
 
@@ -33,7 +33,7 @@ This repo demonstrates a governance-ready approach:
 
 **Default threshold:** `300` (configurable)
 
-**Features used (examples):**
+**Features used:**
 - Age
 - Gender
 - Education_Level *(used for fairness slicing)*
@@ -51,6 +51,9 @@ Governance-ready materials:
 - **Risk Assessment:** `docs/risk_assessment.md`
 - **Data Sheet:** `docs/data_sheet.md`
 - **Baseline vs Mitigated summary (1-page):** `reports/artifacts/comparison.md`
+- **Threshold sweep recommendation:** `reports/artifacts/threshold_sweep/<run_id>/recommended_threshold.md`
+
+> **Tip:** The `comparison.md` and `recommended_threshold.md` files are designed to be stakeholder-friendly and easy to share.
 
 ---
 
@@ -121,22 +124,34 @@ mlflow ui --backend-store-uri ./mlruns
 
 ## Demo app (Streamlit)
 
-A lightweight Streamlit app is included for stakeholder-friendly demos. It loads the latest local MLflow run and allows you to choose Baseline vs Mitigated (reweighing) and generate a prediction from user inputs.
+A lightweight Streamlit app is included for stakeholder-friendly demos. It supports two modes:
+
+- **Streamlit Cloud / hosted:** loads bundled demo models from `models/` (no MLflow required)
+- **Local developer workflow:** can load models from the latest MLflow run (`./mlruns`) when available
 
 ### Install app dependencies
 ```bash
 pip install -e ".[app]"
 ```
 
-### Run the app
+### Run the app locally
 ```bash
-streamlit run app/streamlit_app.py
+streamlit run app/ai_ethics_streamlit.py
 ```
 
-### Notes
-- The app expects that you have trained at least once locally so `mlruns/` exists.
-- It also reads `reports/artifacts/last_run.json` (if available) to show the latest run summary.
-- **Business demo:** open the app, select Baseline vs Mitigated, click Predict, then review the Responsible AI artifacts linked below.
+### Bundled demo models (recommended for Streamlit Cloud)
+
+To make the app work on Streamlit Cloud (no local `mlruns/`), include demo model artifacts in the repo:
+
+```
+models/
+  demo_baseline/
+  demo_mitigated/
+```
+
+The app will automatically prefer these bundled models when present.
+
+If you deploy to Streamlit Cloud, use Python 3.10–3.12 (recommended) and pin your dependencies.
 
 ---
 
@@ -219,7 +234,7 @@ Key files:
 
 - `threshold_sweep_results.csv` / `.json` (all thresholds + metrics)
 - `fairness_vs_threshold_di.png` (DI vs threshold plot)
-- `recommended_threshold.md` (the recommended threshold and trade-off summary)
+- `recommended_threshold.md` (recommended threshold and trade-off summary)
 
 ---
 
@@ -244,6 +259,7 @@ docs/model_card.filled.md
 ```
 app/                       Streamlit demo app
 docs/                      Responsible AI documentation (model card, risk, data sheet)
+models/                    Bundled demo models (for Streamlit Cloud)
 mlruns/                    Local MLflow store (ignored)
 reports/artifacts/         Generated artifacts (baseline/mitigated + sweep outputs)
 src/budget_fairness/       Core package (data, training, fairness, mitigation, reporting, sweeps)
@@ -265,11 +281,20 @@ Workflow file:
 .github/workflows/ci.yml
 ```
 
+### Requirements file (optional)
+
+If you prefer a `requirements.txt` workflow (e.g., for certain deployment targets), you can generate one from your packaging config and keep it in sync. For this repo, the canonical source of dependencies is the project configuration (editable install):
+
+```bash
+pip install -e ".[dev]"
+```
+
 ---
 
 ## What's next (planned improvements)
 
-- CI enhancements (coverage reporting, caching, stricter checks)
+- Coverage reporting (with a minimum threshold)
+- Dependency caching in CI for faster runs
 - Dockerfile for fully reproducible local runs
-- Model registry / promotion rules (choose baseline vs mitigated automatically)
+- Model selection rules (auto-pick baseline vs mitigated under constraints)
 - Scheduled evaluation runs (GitHub Actions cron) for monitoring-style reporting
