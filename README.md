@@ -1,43 +1,243 @@
-# AI_Ethics_Personalized_Budget_Prediction_Model
-Personalization is a central aspect of many core AI systems. In this project, I will be working on a hypothetical use case for a personalized "activity recommender". The use case has a medium ethical AI risk level and involves a synthetic dataset.
+# Responsible ML: Personalized Budget Threshold Predictor (with MLflow)
 
-IDOOU is a mobile app users can leverage to get recommendations on activities they can take in a given area, like “visiting a movie theater”, “visiting a park”, “sightseeing”, “hiking”, or “visiting a library”.
+![CI](../../actions/workflows/ci.yml/badge.svg)
 
-## Problem Statement
-IDOOU's creators would like to identify if users with bachelor's and master's degrees are a privileged group in terms of budget. In other words, do users with higher education credentials beyond high school have a budget >= $300 compared to users of the app who graduated from high school?
+This project builds a **Responsible ML** workflow for predicting whether a user's budget is **above a configurable threshold** (default: **$300**). It includes:
 
-I am tasked with designing IDOOU's newest AI model to predict the budget of its users (in US dollars) given information such as their gender, age, and education_level. I will also explore the provided data and analyze and evaluate this budget predictor's fairness and bias issues.
+- A reproducible training + evaluation pipeline
+- **Fairness slicing** by `Education_Level`
+- **Mitigation via reweighing** (baseline vs mitigated comparison)
+- **Threshold sweep** to select a threshold under fairness + base-rate constraints
+- **MLflow experiment tracking** (metrics, artifacts, model versions)
+- Governance-friendly documentation (model card, data sheet, risk assessment)
 
-**Here are the step-by-step approach I took throughout this project:**
+---
 
-* Data exploration by analyzing and evaluating the fairness and bias issues in the data
-* Built two machine learning models (Logistic Regression and Gaussian Naive Bayes) and also went ahead to evaluate the performance of the models.
-* Performed some analysis and evaluation on the fairness and bias issues in the AI solution.
-* The details of the use case was documented in the `model_card`...
-* One of the models (Logistic Regression model) was selected...I then went ahead to build an explainable AI strategy of my choice to understand the model's predictions.
-* I implemented the Reweighing preprocessing bias mitigation strategy and then evaluated the improvements in fairness on the data.
+## Why this matters (business view)
 
+Many personalization systems (finance, marketing, travel/entertainment, edtech) use signals similar to *budget* to tailor recommendations. If a model learns patterns correlated with socioeconomic proxies (like education), it can unintentionally create **unequal quality-of-service** between groups.
 
-### Ethical Considerations
+This repo demonstrates a governance-ready approach:
+- measure fairness gaps,
+- apply a mitigation method (reweighing),
+- report trade-offs clearly (fairness vs performance),
+- and keep an audit trail (MLflow).
 
-* The objective of the app is to remove users from having to handle the nitty-gritty details of 
-finding the right activity, like determining the appropriate budget, ensuring the weather is perfect, 
-and the location/accommodation is not closed, so users don't have the liberty to control most aspects 
-of the model. 
-* The model for this app does not have any implications on human life, health or safety in the usage
-of the model.
-* The key contributing factors from the permutation importance after the preprocessing bias mitigation
-are users in all the age groups(18-24, 25-44, 45-65, 66-92), and users in the bachelor's and master's 
-education level.
+---
 
-### Caveats and Recommendations
+## What the model predicts
 
-* I'll recommend Logistic Regression model for classification related problems in order to have a better
-accuracy score and better fairness metric scores.
-* Preprocessing and postprocesssing bias mitigation techniques should also be applied on the dataset
-of the model.
-* The Logistic Regression model after the preprocessing bias mitigation seems to have higher false positives and 
-lesser false negatives compared to the Logistic Regression before the bias mitigation.
+**Target:**  
+`high_budget = 1` if `Budget (in dollars) >= threshold` else `0`
 
+**Default threshold:** `300` (configurable)
 
+**Features used (examples):**
+- Age
+- Gender
+- Education_Level *(used for fairness slicing)*
+- With children?
+- Recommended_Activity
 
+---
+
+## Responsible AI (docs + artifacts)
+
+Governance-ready materials:
+
+- **Model Card (template):** `docs/model_card.md`
+- **Model Card (filled with latest run):** `docs/model_card.filled.md`
+- **Risk Assessment:** `docs/risk_assessment.md`
+- **Data Sheet:** `docs/data_sheet.md`
+- **Baseline vs Mitigated summary (1-page):** `reports/artifacts/comparison.md`
+
+---
+
+## Getting started (technical)
+
+### Option A — Conda (recommended while iterating)
+```bash
+conda create -n ai_ethics python=3.10 -y
+conda activate ai_ethics
+
+python -m pip install -U pip
+pip install -e ".[dev]"
+```
+
+### Option B — Virtualenv
+```bash
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
+
+python -m pip install -U pip
+pip install -e ".[dev]"
+```
+
+### Data setup
+The training script expects a CSV with columns:
+
+- Budget (in dollars)
+- Age
+- Gender
+- Education_Level
+- With children?
+- Recommended_Activity
+
+Recommended local layout:
+
+```
+data/
+  udacity_ai_ethics_project_data.csv
+```
+
+**Note:** `data/` is typically gitignored to avoid committing private datasets.
+
+---
+
+## Train (baseline + mitigation) and log to MLflow
+
+```bash
+python -m budget_fairness.train \
+  --data-path data/udacity_ai_ethics_project_data.csv \
+  --model logreg \
+  --sample-n 50000
+```
+
+View MLflow UI (audit trail):
+
+```bash
+mlflow ui --backend-store-uri ./mlruns
+```
+
+### What gets logged to MLflow
+
+- **Params:** threshold, test_size, random_state, mitigation method, etc.
+- **Metrics:** baseline + mitigated performance and fairness
+- **Artifacts:** confusion matrices, classification reports, fairness reports (JSON/MD), comparison summary
+- **Models:** baseline and mitigated pipelines
+
+---
+
+## Fairness evaluation (what we measure)
+
+We compute group fairness using `Education_Level`:
+
+- **Privileged group:** Bachelor's / Master's (configurable)
+- **Unprivileged group:** all others
+
+Metrics logged include:
+
+- **SPD** (statistical parity difference)
+- **DI** (disparate impact)
+- **EOD** (equal opportunity difference)
+- **AOD** (average odds difference)
+- **PPV diff** (predictive parity difference)
+
+Each run logs:
+
+- `baseline_fairness_*`
+- `mitigated_fairness_*`
+- plus deltas (`delta_*`) for quick comparison.
+
+---
+
+## Mitigation method (what we do)
+
+We apply **reweighing** during training:
+
+1. compute instance weights based on group membership and label frequency
+2. fit Logistic Regression using `sample_weight`
+3. compare baseline vs mitigated results in the same MLflow run
+
+Summary artifact:
+
+```
+reports/artifacts/comparison.md
+```
+
+---
+
+## Threshold sweep (fairness vs threshold)
+
+Budget threshold selection can strongly affect both performance and fairness. To avoid choosing a threshold arbitrarily, we run a threshold sweep and evaluate:
+
+- Performance metrics (accuracy, precision/recall, F1, ROC AUC)
+- Fairness metrics (especially DI) under the same `Education_Level` group definition
+- A base-rate constraint to avoid trivial thresholds where almost everyone is positive/negative
+
+### Constraints used
+
+- **Fairness constraint:** mitigated DI ∈ [0.8, 1.25]
+- **Base-rate constraint:** positive rate P(y=1) ∈ [0.3, 0.7]
+
+### Latest sweep result (example)
+
+- **Recommended threshold:** $200
+- **Positive rate at threshold:** 0.6168
+- **Mitigated DI at threshold:** 0.8052 (meets DI constraint)
+- **Trade-off:** mitigation improves fairness substantially, while reducing some performance metrics (details in the sweep summary artifact)
+
+### Run the sweep
+
+```bash
+python -m budget_fairness.threshold_sweep \
+  --data-path data/udacity_ai_ethics_project_data.csv \
+  --min-threshold 100 \
+  --max-threshold 800 \
+  --step 50 \
+  --di-min 0.8 \
+  --di-max 1.25 \
+  --pos-min 0.3 \
+  --pos-max 0.7 \
+  --sample-n 50000
+```
+
+### Sweep artifacts (saved locally + logged to MLflow)
+
+Artifacts are written to:
+
+```
+reports/artifacts/threshold_sweep/<run_id>/
+```
+
+Key files:
+
+- `threshold_sweep_results.csv` / `.json` (all thresholds + metrics)
+- `fairness_vs_threshold_di.png` (DI vs threshold plot)
+- `recommended_threshold.md` (the recommended threshold and trade-off summary)
+
+---
+
+## Generate a filled model card from the latest training run
+
+After training, generate an updated model card from `reports/artifacts/last_run.json`:
+
+```bash
+python -m budget_fairness.reporting --run-json reports/artifacts/last_run.json
+```
+
+**Output:**
+
+```
+docs/model_card.filled.md
+```
+
+---
+
+## Project structure
+
+```
+src/budget_fairness/       Core package (data, training, fairness, mitigation, reporting, sweeps)
+tests/                     Unit tests
+docs/                      Responsible AI documentation (model card, risk, data sheet)
+reports/artifacts/         Generated artifacts (baseline/mitigated + sweep outputs)
+mlruns/                    Local MLflow store (ignored)
+```
+
+---
+
+## What's next (planned improvements)
+
+- CI workflow (lint + tests) via GitHub Actions
+- Streamlit dashboard for stakeholders (upload data, run model, download reports)
+- Drift checks and scheduled evaluation runs (monitoring-style reporting)
